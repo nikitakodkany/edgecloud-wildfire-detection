@@ -1,0 +1,18 @@
+# Core ML + Data
+torch==2.0.1
+torchvision==0.15.2
+numpy
+opencv-python
+matplotlib
+scikit-learn
+albumentations
+onnx
+onnxruntime
+
+# Visualization + Web UI
+streamlit
+pillow
+tensorboard
+
+# Progress bar
+tqdm
