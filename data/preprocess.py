@@ -1,52 +1,65 @@
 import os
-import cv2
+import rasterio
 import numpy as np
+import cv2
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm
 
-RAW_DIR = "data/raw/fire-detection-dataset-master/fire_images"
-PROC_DIR = "data/processed"
-IMG_SIZE = 128
-VAL_SPLIT = 0.15
-TEST_SPLIT = 0.15
+# Define directories
+RAW_DATA_DIR = 'CEMS-Wildfire-Dataset/dataOptimal'
+PROCESSED_IMAGE_DIR = 'data/processed/images'
+PROCESSED_MASK_DIR = 'data/processed/masks'
+IMG_SIZE = (128, 128)
+TEST_SIZE = 0.2
+VAL_SIZE = 0.1
 
-def load_and_resize_images(path, label, size=128):
-    data = []
-    for file in tqdm(os.listdir(path)):
-        full_path = os.path.join(path, file)
-        img = cv2.imread(full_path)
-        if img is None:
-            continue
-        img = cv2.resize(img, (size, size))
-        data.append((img, label))
-    return data
+def preprocess_image(image_path):
+    with rasterio.open(image_path) as src:
+        image = src.read([1, 2, 3])  # Adjust bands as necessary
+        image = np.transpose(image, (1, 2, 0))
+        image = cv2.resize(image, IMG_SIZE)
+        image = image / 10000.0  # Normalize to [0, 1] if original range is [0, 10000]
+        return image.astype(np.float32)
+
+def preprocess_mask(mask_path):
+    with rasterio.open(mask_path) as src:
+        mask = src.read(1)
+        mask = cv2.resize(mask, IMG_SIZE, interpolation=cv2.INTER_NEAREST)
+        mask = (mask > 0).astype(np.uint8)  # Ensure binary mask
+        return mask
 
 def main():
-    fire_path = os.path.join(RAW_DIR)
-    fire_data = load_and_resize_images(fire_path, label=1)
+    os.makedirs(PROCESSED_IMAGE_DIR, exist_ok=True)
+    os.makedirs(PROCESSED_MASK_DIR, exist_ok=True)
 
-    # Optional: add non-fire images from another folder
-    # no_fire_data = load_and_resize_images(NO_FIRE_PATH, label=0)
+    images = []
+    masks = []
 
-    full_data = fire_data  # + no_fire_data
-    print(f"Loaded {len(full_data)} images")
+    for root, _, files in os.walk(RAW_DATA_DIR):
+        image_file = next((f for f in files if f.endswith('_S2L2A.tif')), None)
+        mask_file = next((f for f in files if f.endswith('_DEL.tif')), None)
 
-    imgs, labels = zip(*full_data)
-    imgs = np.array(imgs)
-    labels = np.array(labels)
+        if image_file and mask_file:
+            img_path = os.path.join(root, image_file)
+            mask_path = os.path.join(root, mask_file)
 
-    X_train, X_temp, y_train, y_temp = train_test_split(imgs, labels, test_size=VAL_SPLIT + TEST_SPLIT, random_state=42)
-    val_ratio = VAL_SPLIT / (VAL_SPLIT + TEST_SPLIT)
-    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=1 - val_ratio, random_state=42)
+            image = preprocess_image(img_path)
+            mask = preprocess_mask(mask_path)
 
-    for split, X, y in zip(['train', 'val', 'test'], [X_train, X_val, X_test], [y_train, y_val, y_test]):
-        split_dir = os.path.join(PROC_DIR, split)
-        os.makedirs(split_dir, exist_ok=True)
-        for i, (img, label) in enumerate(zip(X, y)):
-            fname = f"{label}_{i}.jpg"
-            cv2.imwrite(os.path.join(split_dir, fname), img)
+            images.append(image)
+            masks.append(mask)
 
-    print("Preprocessing complete. Data saved to:", PROC_DIR)
+    images = np.array(images)
+    masks = np.array(masks)
+
+    X_train, X_temp, y_train, y_temp = train_test_split(images, masks, test_size=TEST_SIZE + VAL_SIZE, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=TEST_SIZE / (TEST_SIZE + VAL_SIZE), random_state=42)
+
+    np.save(os.path.join(PROCESSED_IMAGE_DIR, 'X_train.npy'), X_train)
+    np.save(os.path.join(PROCESSED_IMAGE_DIR, 'X_val.npy'), X_val)
+    np.save(os.path.join(PROCESSED_IMAGE_DIR, 'X_test.npy'), X_test)
+    np.save(os.path.join(PROCESSED_MASK_DIR, 'y_train.npy'), y_train)
+    np.save(os.path.join(PROCESSED_MASK_DIR, 'y_val.npy'), y_val)
+    np.save(os.path.join(PROCESSED_MASK_DIR, 'y_test.npy'), y_test)
 
 if __name__ == "__main__":
     main()
