@@ -1,0 +1,25 @@
+Wildfire Detection Inference Log
+Model: wildfire_model.onnx
+Dataset: CEMS Wildfire Dataset (Processed Test Set)
+Resolution: 256x256
+Total Frames: 10
+Device: cuda (ONNX Runtime)
+
+------------------------------------------------------------
+Frame   Inference Time (ms)     Memory Usage (MB)
+------------------------------------------------------------
+1       12.47                   318.65
+2       12.56                   318.61
+3       12.44                   318.59
+4       12.52                   318.64
+5       12.51                   318.66
+6       12.48                   318.60
+7       12.49                   318.62
+8       12.53                   318.63
+9       12.46                   318.61
+10      12.50                   318.65
+------------------------------------------------------------
+Average Inference Time: 12.50 ms
+Standard Deviation:     0.04 ms
+Average Memory Used:    318.63 MB
+Log Timestamp: 2025-03-25 21:15:27

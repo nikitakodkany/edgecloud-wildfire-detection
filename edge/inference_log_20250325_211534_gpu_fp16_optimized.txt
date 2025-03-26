@@ -1,0 +1,25 @@
+Wildfire Detection Inference Log
+Model: wildfire_model_fp16.onnx
+Dataset: CEMS Wildfire Dataset (Processed Test Set)
+Resolution: 128x128
+Total Frames: 10
+Device: cuda (TensorRT FP16 via ONNX Runtime)
+
+------------------------------------------------------------
+Frame   Inference Time (ms)     Memory Usage (MB)
+------------------------------------------------------------
+1       5.13                    309.25
+2       5.07                    309.21
+3       5.11                    309.22
+4       5.10                    309.24
+5       5.12                    309.20
+6       5.08                    309.26
+7       5.09                    309.22
+8       5.14                    309.23
+9       5.06                    309.21
+10      5.10                    309.25
+------------------------------------------------------------
+Average Inference Time: 5.10 ms
+Standard Deviation:     0.03 ms
+Average Memory Used:    309.23 MB
+Log Timestamp: 2025-03-25 21:15:34
