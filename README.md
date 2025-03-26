@@ -16,6 +16,11 @@ With a focus on scalable inference, this solution incorporates distributed model
 
 ## Pipeline Overview
 
+<pre lang="markdown"> ```mermaid flowchart TB A[Start] --> B[Process] B --> C[End] ``` </pre>
+In your case, paste the full diagram like this:
+
+<pre lang="markdown"> ```mermaid flowchart TB A["Download CEMS Wildfire Dataset"] --> B["Preprocess Images & Masks"] B --> C["Split into Train / Val / Test Sets"] C --> D["Train U-Net - PyTorch"] D --> E["Export to ONNX Format"] subgraph Inference Backends direction TB E --> F1["ONNX Runtime - CPU\nSizes: 64x64, 128x128, 256x256"] E --> F2["ONNX Runtime - GPU\nSizes: 128x128, 256x256"] E --> F3["TensorRT Optimized\nModes: FP32, FP16\nSize: 128x128"] end F1 --> G["Stream Simulator - Real-Time Inference"] F2 --> G F3 --> G G --> H["Per-Frame Prediction"] H --> I["Fire Mask Overlay"] I --> J["Log Inference Time and Memory Usage"] J --> K["Export Log File\ne.g., inference_log_*.txt"] ``` </pre>
+
 ### 1. Dataset Acquisition
 
 - The dataset is sourced from the [CEMS Wildfire Dataset](https://github.com/MatteoM95/CEMS-Wildfire-Dataset), which contains high-resolution Sentinel-2 satellite images and annotated fire masks.
