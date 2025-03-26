@@ -4,6 +4,24 @@ This project implements a real-time wildfire detection pipeline optimized for ed
 
 With a focus on scalable inference, this solution incorporates distributed model training, ONNX Runtime deployment, performance profiling, and a Streamlit dashboard. It simulates edge-based image streaming to evaluate latency and memory usage — making it a strong demonstration of system-level thinking for AI deployment at scale.
 
+## Performance Highlights
+
+- Designed and deployed an end-to-end wildfire detection pipeline using Sentinel-2 satellite imagery and semantic segmentation with U-Net.
+
+- Trained model using PyTorch with support for multi-GPU scaling and distributed data loading. Exported model to ONNX for framework-agnostic inference.
+
+- Integrated ONNX Runtime and TensorRT for high-throughput, low-latency inference across multiple backends.
+
+- Achieved a **3.2× speedup in inference throughput**:
+  - From 28.01 ms/frame (CPU) to 8.74 ms/frame (GPU TensorRT)
+  - Further optimized to 5.10 ms/frame using TensorRT FP16 at 128×128 resolution
+
+- Benchmarked across multiple input resolutions (64×64 to 256×256) and hardware targets (CPU, CUDA, TensorRT) to analyze trade-offs in latency and memory usage.
+
+- Reduced memory bottlenecks by **up to 42%** via optimized operator execution, resolution scaling, and frame-wise stream processing.
+
+- Logged frame-by-frame inference latency and memory usage to structured `.txt` reports for system-level evaluation and reproducibility.
+
 ## Features
 
 - **Dataset Integration:** Uses open-source Sentinel-2 satellite imagery from the CEMS Wildfire Dataset
@@ -16,43 +34,4 @@ With a focus on scalable inference, this solution incorporates distributed model
 
 ## Pipeline Overview
 
-![Pipeline Architecture](pipelinearch.png)
-
-### 1. Dataset Acquisition
-
-- The dataset is sourced from the [CEMS Wildfire Dataset](https://github.com/MatteoM95/CEMS-Wildfire-Dataset), which contains high-resolution Sentinel-2 satellite images and annotated fire masks.
-
-### 2. Preprocessing
-
-- Raw satellite images and segmentation masks are resized, normalized, and converted to NumPy arrays for model compatibility.
-- The script `preprocess.py` processes the data into training, validation, and test sets stored in `data/processed/`.
-- The target resolution is configurable (e.g., 64×64, 128×128, 256×256), which allows benchmarking at different levels of spatial fidelity.
-
-### 3. Model Training (PyTorch U-Net)
-
-- A U-Net model (`unet_model.py`) is used for semantic segmentation of fire regions in Sentinel-2 RGB images.
-- Training is implemented using PyTorch (`train_unet.py`), with support for GPU acceleration and mini-batch training.
-- Model checkpoints are saved locally as `.pth` files.
-
-### 4. Model Export (ONNX)
-
-- The trained PyTorch model is exported to the ONNX format using `export_onnx.py`.
-- ONNX allows portable, framework-independent inference and serves as a gateway to backend-specific optimizations (e.g., TensorRT, OpenVINO).
-- Exported models are saved in the `models/` directory.
-
-### 5. Inference Pipeline
-
-- Inference on a static image is supported using `infer_onnx.py`.
-- Real-time inference on a sequence of test frames is performed using `stream_simulator.py`.
-
-### 6. Stream Simulation and Performance Logging
-
-- The stream simulator loads preprocessed frames and performs ONNX inference one-by-one at a configurable FPS (e.g., 2 FPS).
-- Each frame is passed through the model, and the output mask is used to create a visual overlay.
-- Latency and memory usage per frame are measured using `time.perf_counter()` and `psutil`.
-- Results are logged to timestamped `.txt` files in the `logs/` directory.
-- Final summaries include average inference time, standard deviation, and memory usage.
-
-### 7. Benchmarking
-
-- Multiple conditions are benchmarked: different resolutions, devices (CPU/GPU), and optimizations (e.g., TensorRT, FP16).
+![Pipeline Architecture](pipelinearch.png) 
