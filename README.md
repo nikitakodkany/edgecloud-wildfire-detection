@@ -16,33 +16,7 @@ With a focus on scalable inference, this solution incorporates distributed model
 
 ## Pipeline Overview
 
-```mermaid
-flowchart TB
-
-    A["Download CEMS Wildfire Dataset"] --> B["Preprocess Images & Masks"]
-    B --> C["Split into Train / Val / Test Sets"]
-    C --> D["Train U-Net - PyTorch"]
-    D --> E["Export to ONNX Format"]
-
-    subgraph Inference_Backends
-        direction TB
-        F1["ONNX Runtime - CPU\nSizes: 64x64, 128x128, 256x256"]
-        F2["ONNX Runtime - GPU\nSizes: 128x128, 256x256"]
-        F3["TensorRT Optimized\nModes: FP32, FP16\nSize: 128x128"]
-    end
-
-    E --> F1
-    E --> F2
-    E --> F3
-
-    F1 --> G["Stream Simulator - Real-Time Inference"]
-    F2 --> G
-    F3 --> G
-
-    G --> H["Per-Frame Prediction"]
-    H --> I["Fire Mask Overlay"]
-    I --> J["Log Inference Time and Memory Usage"]
-    J --> K["Export Log File\ne.g., inference_log_*.txt"]
+![Pipeline Architecture](pipelinearch.png)
 
 ### 1. Dataset Acquisition
 
